@@ -9,6 +9,7 @@ class StandardResponse(BaseModel):
     message: str
     data: Optional[Any] = None
     errors: Optional[List[Any]] = None
+    pagination: Optional[dict] = None
 
 
 # -------- Expense Schemas --------

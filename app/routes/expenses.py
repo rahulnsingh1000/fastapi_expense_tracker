@@ -1,8 +1,10 @@
+from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.orm import Session
 from .. import crud, schemas, database
 from ..schemas import StandardResponse
 from fastapi.responses import JSONResponse
+from typing import Optional
 
 router = APIRouter(prefix="/expenses", tags=["Expenses"])
 
@@ -19,12 +21,14 @@ def get_db():
 #             GET ALL (200 OK)
 # -----------------------------------------
 @router.get("/", response_model=StandardResponse, status_code=status.HTTP_200_OK)
-def get_expenses(db: Session = Depends(get_db)):
-    expenses = crud.get_all_expenses(db)
+def get_expenses(db: Session = Depends(get_db), page: int = 1, limit: int = 10, category: Optional[str] = None, amount: Optional[float] = None, description: Optional[str] = None, date: Optional[date] = None):
+    expenses = crud.get_all_expenses(db, page, limit, category, amount, description, date)
+    pagination = expenses["pagination"]
     return StandardResponse(
         success=True,
         message="Expenses fetched successfully",
-        data=expenses,
+        data=expenses["data"],
+        pagination=pagination,
     )
 
 
@@ -98,7 +102,7 @@ def update_expense_route(
 
 
 # -----------------------------------------
-#        DELETE (204 NO CONTENT)
+#        DELETE (200 OK)
 # -----------------------------------------
 @router.delete("/{expense_id}", response_model=StandardResponse, status_code=status.HTTP_200_OK)
 def delete_expense_route(expense_id: int, db: Session = Depends(get_db)):
